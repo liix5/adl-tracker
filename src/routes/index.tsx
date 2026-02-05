@@ -18,8 +18,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 
-import { Plus, BedDouble, Calendar, Trash2 } from "lucide-react";
+import { Plus, BedDouble, Calendar, Trash2, Target } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: PatientsHome,
@@ -36,9 +37,9 @@ function PatientsHome() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Patients</h1>
-          <p className="text-sm text-muted-foreground">
-            Tap a patient to view goals and ADL tracking.
+          <h1 className="text-3xl font-bold tracking-tight">FIM Tracker</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Track patient functional independence and ADL progress
           </p>
         </div>
 
@@ -46,10 +47,13 @@ function PatientsHome() {
       </div>
 
       {(patients?.length ?? 0) === 0 ? (
-        <div className="rounded-xl border bg-card p-10 text-center">
+        <div className="rounded-2xl border-2 border-dashed bg-card p-12 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <Target className="h-8 w-8 text-primary" />
+          </div>
           <div className="text-xl font-semibold">No patients yet</div>
           <p className="mt-2 text-sm text-muted-foreground">
-            Create your first patient to start tracking goals.
+            Create your first patient to start tracking FIM goals
           </p>
           <div className="mt-6">
             <AddPatientDialog />
@@ -67,77 +71,145 @@ function PatientsHome() {
 }
 
 function PatientCard({ patient }: { patient: Patient }) {
-  return (
-    <Card className="group overflow-hidden">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <Link
-              to="/patients/$patientId"
-              params={{ patientId: patient.id }}
-              className="block truncate text-lg font-semibold leading-tight hover:underline"
-            >
-              {patient.fullName}
-            </Link>
-
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              {patient.room ? (
-                <span className="inline-flex items-center gap-1">
-                  <BedDouble className="h-4 w-4" />
-                  {patient.room}
-                </span>
-              ) : null}
-
-              {typeof patient.age === "number" ? (
-                <span>{patient.age} yrs</span>
-              ) : null}
-
-              {patient.dischargeDate ? (
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  {patient.dischargeDate}
-                </span>
-              ) : null}
-            </div>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={async () => {
-              const ok = window.confirm(
-                `Delete ${patient.fullName}? This cannot be undone.`
-              );
-              if (!ok) return;
-              await deletePatient(patient.id);
-            }}
-            aria-label="Delete patient"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-2">
-        {patient.diagnosis ? (
-          <div className="line-clamp-2 text-sm text-muted-foreground">
-            {patient.diagnosis}
-          </div>
-        ) : (
-          <div className="text-sm text-muted-foreground italic">
-            No diagnosis added
-          </div>
-        )}
-
-        {/* Placeholder — next step we replace this with Goals progress */}
-        <div className="mt-3 rounded-lg border bg-muted/30 px-3 py-2 text-sm">
-          <span className="text-muted-foreground">Goals:</span>{" "}
-          <span className="font-medium">—</span>
-        </div>
-      </CardContent>
-    </Card>
+  // Get ADL goals for this patient
+  const patientAdls = useLiveQuery(
+    async () => {
+      return await db.patientAdls
+        .where("patientId")
+        .equals(patient.id)
+        .toArray();
+    },
+    [patient.id]
   );
+
+  const totalAdls = patientAdls?.length ?? 0;
+  const goalsReached =
+    patientAdls?.filter(
+      (adl) => adl.goalScore && adl.currentScore >= adl.goalScore
+    ).length ?? 0;
+  const progressPercentage =
+    totalAdls > 0 ? Math.round((goalsReached / totalAdls) * 100) : 0;
+
+  // Calculate days until discharge
+  const daysUntilDischarge = patient.dischargeDate
+    ? calculateDaysUntil(patient.dischargeDate)
+    : null;
+
+  return (
+    <Link to="/patients/$patientId" params={{ patientId: patient.id }}>
+      <Card className="group overflow-hidden transition-all hover:shadow-lg">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate text-lg font-semibold leading-tight group-hover:text-primary">
+                {patient.fullName}
+              </h3>
+
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                {patient.room && (
+                  <span className="inline-flex items-center gap-1">
+                    <BedDouble className="h-4 w-4" />
+                    Room {patient.room}
+                  </span>
+                )}
+
+                {typeof patient.age === "number" && (
+                  <span>• {patient.age} yrs</span>
+                )}
+              </div>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const ok = window.confirm(
+                  `Delete ${patient.fullName}? This cannot be undone.`
+                );
+                if (!ok) return;
+                await deletePatient(patient.id);
+              }}
+              aria-label="Delete patient"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-3">
+          {patient.diagnosis && (
+            <div className="line-clamp-2 text-sm text-muted-foreground">
+              {patient.diagnosis}
+            </div>
+          )}
+
+          {/* Goal Progress */}
+          {totalAdls > 0 ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                  <Target className="h-4 w-4 text-primary" />
+                  Goals Progress
+                </span>
+                <span className="font-semibold">
+                  {goalsReached}/{totalAdls}
+                </span>
+              </div>
+              <Progress value={progressPercentage} className="h-2" />
+            </div>
+          ) : (
+            <div className="rounded-lg border bg-muted/30 px-3 py-2 text-center text-sm text-muted-foreground">
+              No ADLs tracked yet
+            </div>
+          )}
+
+          {/* Discharge Date */}
+          {patient.dischargeDate && (
+            <div className="flex items-center justify-between rounded-lg border-l-4 border-primary bg-primary/5 px-3 py-2 text-sm">
+              <span className="flex items-center gap-1.5 font-medium">
+                <Calendar className="h-4 w-4" />
+                Discharge
+              </span>
+              <span className="font-semibold">
+                {daysUntilDischarge !== null ? (
+                  daysUntilDischarge === 0 ? (
+                    <span className="text-orange-600">Today</span>
+                  ) : daysUntilDischarge < 0 ? (
+                    <span className="text-red-600">
+                      {Math.abs(daysUntilDischarge)} days overdue
+                    </span>
+                  ) : (
+                    <span className="text-primary">
+                      {daysUntilDischarge} day{daysUntilDischarge !== 1 ? "s" : ""}
+                    </span>
+                  )
+                ) : (
+                  patient.dischargeDate
+                )}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+function calculateDaysUntil(dateString: string): number | null {
+  try {
+    const discharge = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    discharge.setHours(0, 0, 0, 0);
+    const diffTime = discharge.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  } catch {
+    return null;
+  }
 }
 
 function AddPatientDialog() {

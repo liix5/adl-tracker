@@ -10,43 +10,91 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PatientsPatientIdRouteImport } from './routes/patients/$patientId'
+import { Route as PatientsPatientIdIndexRouteImport } from './routes/patients/$patientId/index'
+import { Route as PatientsPatientIdEditRouteImport } from './routes/patients/$patientId/edit'
+import { Route as PatientsPatientIdAdlsNewRouteImport } from './routes/patients/$patientId/adls/new'
+import { Route as PatientsPatientIdAdlsAdlTypeRouteImport } from './routes/patients/$patientId/adls/$adlType'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PatientsPatientIdRoute = PatientsPatientIdRouteImport.update({
-  id: '/patients/$patientId',
-  path: '/patients/$patientId',
+const PatientsPatientIdIndexRoute = PatientsPatientIdIndexRouteImport.update({
+  id: '/patients/$patientId/',
+  path: '/patients/$patientId/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PatientsPatientIdEditRoute = PatientsPatientIdEditRouteImport.update({
+  id: '/patients/$patientId/edit',
+  path: '/patients/$patientId/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PatientsPatientIdAdlsNewRoute =
+  PatientsPatientIdAdlsNewRouteImport.update({
+    id: '/patients/$patientId/adls/new',
+    path: '/patients/$patientId/adls/new',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const PatientsPatientIdAdlsAdlTypeRoute =
+  PatientsPatientIdAdlsAdlTypeRouteImport.update({
+    id: '/patients/$patientId/adls/$adlType',
+    path: '/patients/$patientId/adls/$adlType',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/patients/$patientId/edit': typeof PatientsPatientIdEditRoute
+  '/patients/$patientId': typeof PatientsPatientIdIndexRoute
+  '/patients/$patientId/adls/$adlType': typeof PatientsPatientIdAdlsAdlTypeRoute
+  '/patients/$patientId/adls/new': typeof PatientsPatientIdAdlsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/patients/$patientId/edit': typeof PatientsPatientIdEditRoute
+  '/patients/$patientId': typeof PatientsPatientIdIndexRoute
+  '/patients/$patientId/adls/$adlType': typeof PatientsPatientIdAdlsAdlTypeRoute
+  '/patients/$patientId/adls/new': typeof PatientsPatientIdAdlsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/patients/$patientId/edit': typeof PatientsPatientIdEditRoute
+  '/patients/$patientId/': typeof PatientsPatientIdIndexRoute
+  '/patients/$patientId/adls/$adlType': typeof PatientsPatientIdAdlsAdlTypeRoute
+  '/patients/$patientId/adls/new': typeof PatientsPatientIdAdlsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/patients/$patientId'
+  fullPaths:
+    | '/'
+    | '/patients/$patientId/edit'
+    | '/patients/$patientId'
+    | '/patients/$patientId/adls/$adlType'
+    | '/patients/$patientId/adls/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/patients/$patientId'
-  id: '__root__' | '/' | '/patients/$patientId'
+  to:
+    | '/'
+    | '/patients/$patientId/edit'
+    | '/patients/$patientId'
+    | '/patients/$patientId/adls/$adlType'
+    | '/patients/$patientId/adls/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/patients/$patientId/edit'
+    | '/patients/$patientId/'
+    | '/patients/$patientId/adls/$adlType'
+    | '/patients/$patientId/adls/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PatientsPatientIdRoute: typeof PatientsPatientIdRoute
+  PatientsPatientIdEditRoute: typeof PatientsPatientIdEditRoute
+  PatientsPatientIdIndexRoute: typeof PatientsPatientIdIndexRoute
+  PatientsPatientIdAdlsAdlTypeRoute: typeof PatientsPatientIdAdlsAdlTypeRoute
+  PatientsPatientIdAdlsNewRoute: typeof PatientsPatientIdAdlsNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,11 +106,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/patients/$patientId': {
-      id: '/patients/$patientId'
+    '/patients/$patientId/': {
+      id: '/patients/$patientId/'
       path: '/patients/$patientId'
       fullPath: '/patients/$patientId'
-      preLoaderRoute: typeof PatientsPatientIdRouteImport
+      preLoaderRoute: typeof PatientsPatientIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patients/$patientId/edit': {
+      id: '/patients/$patientId/edit'
+      path: '/patients/$patientId/edit'
+      fullPath: '/patients/$patientId/edit'
+      preLoaderRoute: typeof PatientsPatientIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patients/$patientId/adls/new': {
+      id: '/patients/$patientId/adls/new'
+      path: '/patients/$patientId/adls/new'
+      fullPath: '/patients/$patientId/adls/new'
+      preLoaderRoute: typeof PatientsPatientIdAdlsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patients/$patientId/adls/$adlType': {
+      id: '/patients/$patientId/adls/$adlType'
+      path: '/patients/$patientId/adls/$adlType'
+      fullPath: '/patients/$patientId/adls/$adlType'
+      preLoaderRoute: typeof PatientsPatientIdAdlsAdlTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -70,7 +139,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PatientsPatientIdRoute: PatientsPatientIdRoute,
+  PatientsPatientIdEditRoute: PatientsPatientIdEditRoute,
+  PatientsPatientIdIndexRoute: PatientsPatientIdIndexRoute,
+  PatientsPatientIdAdlsAdlTypeRoute: PatientsPatientIdAdlsAdlTypeRoute,
+  PatientsPatientIdAdlsNewRoute: PatientsPatientIdAdlsNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
