@@ -71,7 +71,7 @@ function PatientDetailPage() {
   // Get available ADLs that haven't been added yet
   const trackedTypes = new Set(patientAdls?.map((a) => a.adlType) ?? []);
   const availableAdls = ADL_DEFINITIONS.filter(
-    (def) => !trackedTypes.has(def.type)
+    (def) => !trackedTypes.has(def.type),
   );
 
   return (
@@ -150,7 +150,8 @@ function PatientDetailPage() {
                             : "font-semibold text-primary"
                       }
                     >
-                      ({daysUntilDischarge === 0
+                      (
+                      {daysUntilDischarge === 0
                         ? "Today"
                         : daysUntilDischarge < 0
                           ? `${Math.abs(daysUntilDischarge)} days overdue`
@@ -232,9 +233,9 @@ function ADLCategorySection({
                 Math.round(
                   ((adl.currentScore - adl.admissionScore) /
                     (adl.goalScore! - adl.admissionScore)) *
-                    100
+                    100,
                 ),
-                100
+                100,
               )
             : 0;
 
@@ -255,9 +256,7 @@ function ADLCategorySection({
                           → {adl.goalScore}
                         </div>
                       )}
-                      {goalReached && (
-                        <div className="text-xl">🎉</div>
-                      )}
+                      {goalReached && <div className="text-xl">🎉</div>}
                     </div>
                   </div>
                 </CardHeader>

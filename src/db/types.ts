@@ -11,8 +11,19 @@ export type Patient = {
 
   notes?: string;
 
+  labelIds?: string[]; // Array of Label IDs for custom categorization
+
   createdAt: string; // ISO datetime
   updatedAt: string; // ISO datetime
+};
+
+// Custom labels for patient categorization
+export type Label = {
+  id: string;
+  name: string;
+  color: string; // Color ID from LABEL_COLORS (e.g., "red", "blue")
+  createdAt: string;
+  updatedAt: string;
 };
 
 // ADL Types - 11 Motor ADLs
