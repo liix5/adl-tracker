@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Edit,
   Activity,
+  FileText,
 } from "lucide-react";
 import { ADL_DEFINITIONS } from "@/data/adl-definitions";
 import type { ADLType, PatientADL, AssistanceLevel } from "@/db/types";
@@ -131,6 +132,16 @@ function PatientDetailPage() {
                   <div>
                     <span className="font-semibold">Precautions:</span>{" "}
                     {patient.precautions}
+                  </div>
+                </div>
+              )}
+
+              {patient.notes && (
+                <div className="mt-2 flex items-start gap-2 rounded-lg border-l-4 border-muted-foreground/30 bg-muted/50 px-3 py-2 text-sm">
+                  <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <div>
+                    <span className="font-semibold">Notes:</span>{" "}
+                    <span className="whitespace-pre-wrap">{patient.notes}</span>
                   </div>
                 </div>
               )}
