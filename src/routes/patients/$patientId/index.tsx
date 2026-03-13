@@ -16,6 +16,7 @@ import {
   FileText,
 } from "lucide-react";
 import { ADL_DEFINITIONS } from "@/data/adl-definitions";
+import { ADLSummaryTable } from "@/features/adl/components/ADLSummaryTable";
 import type { ADLType, PatientADL, AssistanceLevel } from "@/db/types";
 
 export const Route = createFileRoute("/patients/$patientId/")({
@@ -137,8 +138,8 @@ function PatientDetailPage() {
               )}
 
               {patient.notes && (
-                <div className="mt-2 flex items-start gap-2 rounded-lg border-l-4 border-muted-foreground/30 bg-muted/50 px-3 py-2 text-sm">
-                  <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="mt-2 flex items-start gap-2 rounded-lg border-l-4 border-yellow-500 bg-yellow-50 px-3 py-2 text-sm dark:bg-yellow-950/30">
+                  <FileText className="mt-0.5 h-4 w-4 shrink-0 text-yellow-600" />
                   <div>
                     <span className="font-semibold">Notes:</span>{" "}
                     <span className="whitespace-pre-wrap">{patient.notes}</span>
@@ -208,6 +209,14 @@ function PatientDetailPage() {
           <AddADLButton
             patientId={patientId}
             isEmpty={(patientAdls?.length ?? 0) === 0}
+          />
+        )}
+
+        {/* ADL Summary Table */}
+        {patientAdls && patientAdls.length > 0 && (
+          <ADLSummaryTable
+            patientAdls={patientAdls}
+            patientName={patient.fullName}
           />
         )}
       </div>

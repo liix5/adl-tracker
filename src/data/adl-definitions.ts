@@ -87,26 +87,18 @@ const bathing: ADLDefinition = {
   category: "selfCare",
   description: "Wash and dry body from neck down (excluding back)",
   steps: [
+    // Trunk
     {
-      id: "left-arm",
-      name: "Wash/dry left arm",
-      weight: 10,
-    },
-    {
-      id: "right-arm",
-      name: "Wash/dry right arm",
-      weight: 10,
-    },
-    {
-      id: "chest",
+      id: "trunk-chest",
       name: "Wash/dry chest",
       weight: 10,
     },
     {
-      id: "abdomen",
+      id: "trunk-abdomen",
       name: "Wash/dry abdomen",
       weight: 10,
     },
+    // Perineum
     {
       id: "perineum-front",
       name: "Wash/dry perineum (front)",
@@ -117,19 +109,31 @@ const bathing: ADLDefinition = {
       name: "Wash/dry perineum (back)",
       weight: 10,
     },
+    // Left side
+    {
+      id: "left-arm",
+      name: "Wash/dry left arm",
+      weight: 10,
+    },
     {
       id: "left-upper-leg",
       name: "Wash/dry left upper leg",
       weight: 10,
     },
     {
-      id: "right-upper-leg",
-      name: "Wash/dry right upper leg",
+      id: "left-lower-leg-foot",
+      name: "Wash/dry left lower leg and foot",
+      weight: 10,
+    },
+    // Right side
+    {
+      id: "right-arm",
+      name: "Wash/dry right arm",
       weight: 10,
     },
     {
-      id: "left-lower-leg-foot",
-      name: "Wash/dry left lower leg and foot",
+      id: "right-upper-leg",
+      name: "Wash/dry right upper leg",
       weight: 10,
     },
     {
