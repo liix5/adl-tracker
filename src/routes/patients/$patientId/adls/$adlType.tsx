@@ -30,7 +30,7 @@ import { ADLConfigPanel } from "@/features/adl/components/ADLConfigPanel";
 import { ProgressNote } from "@/features/adl/components/ProgressNote";
 import { getApplicableSteps, calculateScoreFromSteps } from "@/features/adl/scoring";
 import { generateProgressNote } from "@/features/adl/progress-note";
-import { updatePatientADLAssessment, deletePatientADL } from "@/features/adl/api";
+import { updatePatientADLAssessment, deletePatientADL, updatePatientADLGoal } from "@/features/adl/api";
 
 export const Route = createFileRoute("/patients/$patientId/adls/$adlType")({
   component: ADLAssessmentPage,
@@ -345,6 +345,10 @@ function ADLAssessmentPage() {
             admissionScore={patientAdl.admissionScore}
             currentScore={displayScore}
             goalScore={patientAdl.goalScore}
+            editable={!isEditing}
+            onGoalChange={async (newGoal) => {
+              await updatePatientADLGoal(patientAdl.id, newGoal);
+            }}
           />
         </CardContent>
       </Card>

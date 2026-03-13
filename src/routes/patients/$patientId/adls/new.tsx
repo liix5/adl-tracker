@@ -13,6 +13,7 @@ import { ScoreDisplay } from "@/features/adl/components/ScoreDisplay";
 import { FollowUpQuestions } from "@/features/adl/components/FollowUpQuestions";
 import { ADLStepsList } from "@/features/adl/components/ADLStepsList";
 import { ADLConfigPanel } from "@/features/adl/components/ADLConfigPanel";
+import { GoalSelector } from "@/features/adl/components/GoalSelector";
 import { createPatientADL } from "@/features/adl/api";
 import { getApplicableSteps, calculateScoreFromSteps } from "@/features/adl/scoring";
 
@@ -37,7 +38,7 @@ function AddADLPage() {
   const [score6Reasons, setScore6Reasons] = React.useState<Score6Reason[]>([]);
   const [score5Types, setScore5Types] = React.useState<Score5Type[]>([]);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
-  const [goalScore, setGoalScore] = React.useState<string>("none");
+  const [goalScore, setGoalScore] = React.useState<number | undefined>(undefined);
   const [isSaving, setIsSaving] = React.useState(false);
   const [needsSupervision, setNeedsSupervision] = React.useState<boolean | undefined>(undefined);
   const [needsModifiers, setNeedsModifiers] = React.useState<boolean | undefined>(undefined);
@@ -113,7 +114,7 @@ function AddADLPage() {
         admissionAssistanceLevel: assistanceLevel,
         admissionScore6Reasons: assistanceLevel === 6 ? score6Reasons : undefined,
         admissionScore5Types: assistanceLevel === 5 ? score5Types : undefined,
-        goalScore: goalScore && goalScore !== "none" ? Number(goalScore) : undefined,
+        goalScore: goalScore,
       });
 
       // Navigate to the new ADL assessment page
@@ -290,22 +291,12 @@ function AddADLPage() {
                 </p>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="goalScore">Target Score</Label>
-                  <Select value={goalScore} onValueChange={setGoalScore}>
-                    <SelectTrigger id="goalScore">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No goal set</SelectItem>
-                      {[7, 6, 5, 4, 3, 2, 1].map((score) => (
-                        <SelectItem key={score} value={score.toString()}>
-                          {score}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <GoalSelector
+                  value={goalScore}
+                  onChange={setGoalScore}
+                  currentScore={assistanceLevel}
+                  admissionScore={assistanceLevel}
+                />
               </CardContent>
             </Card>
           </>

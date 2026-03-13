@@ -1,14 +1,19 @@
+import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AssistanceLevel } from "@/db/types";
 import { ScoreBadge } from "./ScoreDisplay";
-import { ArrowRight, Target, TrendingUp } from "lucide-react";
+import { GoalSelector } from "./GoalSelector";
+import { ArrowRight, Target, TrendingUp, Pencil } from "lucide-react";
 
 interface GoalProgressProps {
   admissionScore: number;
   currentScore: number;
   goalScore?: number;
   className?: string;
+  onGoalChange?: (goalScore: number | undefined) => void;
+  editable?: boolean;
 }
 
 export function GoalProgress({
@@ -16,7 +21,11 @@ export function GoalProgress({
   currentScore,
   goalScore,
   className,
+  onGoalChange,
+  editable = false,
 }: GoalProgressProps) {
+  const [isEditing, setIsEditing] = useState(false);
+
   const hasGoal = goalScore !== undefined;
   const progressPercentage = hasGoal
     ? calculateProgressPercentage(admissionScore, currentScore, goalScore)
@@ -26,6 +35,31 @@ export function GoalProgress({
   const isImproving = improvement > 0;
   const isStable = improvement === 0;
   const isDeclining = improvement < 0;
+
+  // Show edit mode
+  if (isEditing && editable && onGoalChange) {
+    return (
+      <div className={cn("space-y-4", className)}>
+        <GoalSelector
+          value={goalScore}
+          onChange={(value) => {
+            onGoalChange(value);
+            setIsEditing(false);
+          }}
+          currentScore={currentScore}
+          admissionScore={admissionScore}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => setIsEditing(false)}
+        >
+          Cancel
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -73,7 +107,7 @@ export function GoalProgress({
           </div>
         </div>
 
-        {hasGoal && (
+        {hasGoal ? (
           <>
             <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
 
@@ -95,13 +129,33 @@ export function GoalProgress({
               </div>
             </div>
           </>
-        )}
+        ) : editable ? (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-2 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            <Target className="h-6 w-6" />
+            <span className="text-xs font-medium">Set Goal</span>
+          </button>
+        ) : null}
       </div>
 
       {/* Progress Bar (if goal is set) */}
       {hasGoal && (
         <div className="space-y-2">
-          <Progress value={progressPercentage} className="h-3" />
+          <div className="flex items-center gap-2">
+            <Progress value={progressPercentage} className="h-3 flex-1" />
+            {editable && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0 text-muted-foreground hover:text-primary"
+                onClick={() => setIsEditing(true)}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">
               {progressPercentage}% to goal

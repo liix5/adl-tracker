@@ -9,6 +9,7 @@ import { getLabelColor, isPresetColor } from "@/features/labels/constants";
 import { LabelBadge } from "@/features/labels/components/LabelBadge";
 import { LabelAssignDialog } from "@/features/labels/components/LabelAssignDialog";
 import { LabelManagerDialog } from "@/features/labels/components/LabelManagerDialog";
+import { DataSyncDialog } from "@/features/sync/components/DataSyncDialog";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -35,6 +36,7 @@ import {
   Tag,
   X,
   Pencil,
+  HardDriveDownload,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -47,6 +49,7 @@ function PatientsHome() {
     null,
   );
   const [labelManagerOpen, setLabelManagerOpen] = React.useState(false);
+  const [syncDialogOpen, setSyncDialogOpen] = React.useState(false);
 
   const patients = useLiveQuery(async () => {
     const all = await db.patients.toArray();
@@ -104,7 +107,17 @@ function PatientsHome() {
           </p>
         </div>
 
-        <AddPatientDialog />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSyncDialogOpen(true)}
+            aria-label="Backup & Sync"
+          >
+            <HardDriveDownload className="h-4 w-4" />
+          </Button>
+          <AddPatientDialog />
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -262,6 +275,9 @@ function PatientsHome() {
         open={labelManagerOpen}
         onOpenChange={setLabelManagerOpen}
       />
+
+      {/* Data Sync Dialog */}
+      <DataSyncDialog open={syncDialogOpen} onOpenChange={setSyncDialogOpen} />
     </div>
   );
 }
