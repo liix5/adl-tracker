@@ -48,7 +48,7 @@ export type AssistanceLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 // Score 6 - Modified Independence reasons
 export type Score6Reason = "assistiveDevice" | "safetyConcerns" | "extraTime";
 
-// Score 5 - Supervision/Setup types
+// Score 5 - Setup/Supervision types
 export type Score5Type = "standby" | "cueing" | "coaxing" | "setup";
 
 // PatientADL - an ADL being tracked for a patient

@@ -56,7 +56,7 @@ export function Score5TypeSelector({
   return (
     <div className={className}>
       <div className="mb-3 text-sm font-semibold text-muted-foreground">
-        Type of Supervision/Setup
+        Type of Setup/Supervision
       </div>
       <div className="space-y-3">
         {TYPE_OPTIONS.map((option) => {

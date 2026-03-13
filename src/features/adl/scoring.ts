@@ -64,7 +64,7 @@ export function getAssistanceLevelName(level: AssistanceLevel): string {
   const names: Record<AssistanceLevel, string> = {
     7: "Complete Independence",
     6: "Modified Independence",
-    5: "Supervision/Setup",
+    5: "Setup/Supervision",
     4: "Minimal Assistance",
     3: "Moderate Assistance",
     2: "Maximal Assistance",

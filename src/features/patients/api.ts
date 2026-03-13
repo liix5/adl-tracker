@@ -44,5 +44,18 @@ export async function updatePatient(id: string, patch: Partial<Patient>) {
 }
 
 export async function deletePatient(id: string) {
+  // Get all ADLs for this patient
+  const patientAdls = await db.patientAdls.where("patientId").equals(id).toArray();
+
+  // Delete all assessments for each ADL
+  for (const adl of patientAdls) {
+    const assessments = await db.assessments.where("patientAdlId").equals(adl.id).toArray();
+    await db.assessments.bulkDelete(assessments.map((a) => a.id));
+  }
+
+  // Delete all ADLs
+  await db.patientAdls.bulkDelete(patientAdls.map((a) => a.id));
+
+  // Delete the patient
   await db.patients.delete(id);
 }

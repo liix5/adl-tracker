@@ -2,13 +2,24 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import * as React from "react";
 import { db } from "@/db";
-import { updatePatient } from "@/features/patients/api";
+import { updatePatient, deletePatient } from "@/features/patients/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Save } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Save, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/patients/$patientId/edit")({
   component: EditPatientPage,
@@ -17,13 +28,14 @@ export const Route = createFileRoute("/patients/$patientId/edit")({
 function EditPatientPage() {
   const { patientId } = Route.useParams();
   const navigate = useNavigate();
-  console.log('EditPatientPage', patientId, 'iam open ');
+  console.log("EditPatientPage", patientId, "iam open ");
 
   const patient = useLiveQuery(async () => {
     return await db.patients.get(patientId);
   }, [patientId]);
 
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const [fullName, setFullName] = React.useState("");
   const [age, setAge] = React.useState<string>("");
@@ -91,6 +103,16 @@ function EditPatientPage() {
       });
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setIsDeleting(true);
+    try {
+      await deletePatient(patientId);
+      navigate({ to: "/" });
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -199,12 +221,65 @@ function EditPatientPage() {
                   Cancel
                 </Button>
               </Link>
-              <Button type="submit" disabled={isSaving || !fullName.trim()} className="gap-2">
+              <Button
+                type="submit"
+                disabled={isSaving || !fullName.trim()}
+                className="gap-2"
+              >
                 <Save className="h-4 w-4" />
                 {isSaving ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <h2 className="text-lg font-semibold text-destructive">
+            Danger Zone
+          </h2>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Delete this patient</p>
+              <p className="text-sm text-muted-foreground">
+                Permanently delete this patient and all their ADL data
+              </p>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  Delete Patient
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Delete {patient.fullName}?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete this patient and all their ADL
+                    tracking data including assessment history. This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    variant={"destructive"}
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </CardContent>
       </Card>
     </div>

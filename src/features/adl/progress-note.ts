@@ -77,7 +77,7 @@ function generateScore6Note(
 }
 
 /**
- * Generate Score 5 (Supervision/Setup) note
+ * Generate Score 5 (Setup/Supervision) note
  */
 function generateScore5Note(adlName: string, types?: Score5Type[]): string {
   if (!types || types.length === 0) {

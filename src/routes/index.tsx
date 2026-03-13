@@ -274,6 +274,8 @@ function PatientCard({
   labels: Label[];
 }) {
   const [labelDialogOpen, setLabelDialogOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   // Get ADL goals for this patient
   const patientAdls = useLiveQuery(async () => {
@@ -312,7 +314,9 @@ function PatientCard({
                     setLabelDialogOpen(true);
                   }}
                   className="mb-1.5 flex flex-wrap items-center gap-1.5 rounded-md transition-colors hover:bg-muted/50 -ml-1 px-1 py-0.5"
-                  aria-label={patientLabels.length > 0 ? "Edit labels" : "Add label"}
+                  aria-label={
+                    patientLabels.length > 0 ? "Edit labels" : "Add label"
+                  }
                 >
                   {patientLabels.length > 0 ? (
                     <>
@@ -352,15 +356,11 @@ function PatientCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={async (e) => {
+                className="text-muted-foreground hover:text-destructive"
+                onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  const ok = window.confirm(
-                    `Delete ${patient.fullName}? This cannot be undone.`,
-                  );
-                  if (!ok) return;
-                  await deletePatient(patient.id);
+                  setDeleteDialogOpen(true);
                 }}
                 aria-label="Delete patient"
               >
@@ -435,6 +435,44 @@ function PatientCard({
         open={labelDialogOpen}
         onOpenChange={setLabelDialogOpen}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className=" gap-3">
+          <DialogHeader className="t">
+            <DialogTitle className=" text-2xl">
+              Delete {patient.fullName}?
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This will permanently delete this patient and all their ADL tracking
+            data. This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={async () => {
+                setIsDeleting(true);
+                try {
+                  await deletePatient(patient.id);
+                  setDeleteDialogOpen(false);
+                } finally {
+                  setIsDeleting(false);
+                }
+              }}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

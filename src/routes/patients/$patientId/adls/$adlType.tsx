@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import * as React from "react";
 import { db } from "@/db";
@@ -9,7 +9,18 @@ import type {
 } from "@/db/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft, Save, AlertCircle, Pencil } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Save, AlertCircle, Pencil, Trash2 } from "lucide-react";
 import { getADLDefinition } from "@/data/adl-definitions";
 import { ScoreDisplay } from "@/features/adl/components/ScoreDisplay";
 import { FollowUpQuestions } from "@/features/adl/components/FollowUpQuestions";
@@ -19,7 +30,7 @@ import { ADLConfigPanel } from "@/features/adl/components/ADLConfigPanel";
 import { ProgressNote } from "@/features/adl/components/ProgressNote";
 import { getApplicableSteps, calculateScoreFromSteps } from "@/features/adl/scoring";
 import { generateProgressNote } from "@/features/adl/progress-note";
-import { updatePatientADLAssessment } from "@/features/adl/api";
+import { updatePatientADLAssessment, deletePatientADL } from "@/features/adl/api";
 
 export const Route = createFileRoute("/patients/$patientId/adls/$adlType")({
   component: ADLAssessmentPage,
@@ -27,6 +38,7 @@ export const Route = createFileRoute("/patients/$patientId/adls/$adlType")({
 
 function ADLAssessmentPage() {
   const { patientId, adlType } = Route.useParams();
+  const navigate = useNavigate();
 
   const patient = useLiveQuery(async () => {
     return await db.patients.get(patientId);
@@ -51,6 +63,7 @@ function ADLAssessmentPage() {
   const [score5Types, setScore5Types] = React.useState<Score5Type[]>([]);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const [needsSupervision, setNeedsSupervision] = React.useState<boolean | undefined>(undefined);
   const [needsModifiers, setNeedsModifiers] = React.useState<boolean | undefined>(undefined);
 
@@ -177,6 +190,16 @@ function ADLAssessmentPage() {
     setIsEditing(false);
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deletePatientADL(patientAdl.id);
+      navigate({ to: "/patients/$patientId", params: { patientId } });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className={`space-y-6 ${isEditing ? "pb-20" : ""}`}>
       {/* Header */}
@@ -190,6 +213,33 @@ function ADLAssessmentPage() {
             Back to {patient.fullName}
           </Button>
         </Link>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive">
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete {adlDefinition.name}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete this ADL and all its assessment history for {patient.fullName}. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {/* Title */}
