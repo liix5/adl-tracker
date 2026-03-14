@@ -26,7 +26,7 @@ import {
   Edit,
   Activity,
   FileText,
-  Trash2,
+  X,
 } from "lucide-react";
 import { ADL_DEFINITIONS } from "@/data/adl-definitions";
 import { ADLSummaryTable } from "@/features/adl/components/ADLSummaryTable";
@@ -199,6 +199,7 @@ function PatientDetailPage() {
             title="Self-Care"
             adls={adlsByCategory.selfCare!}
             patientId={patientId}
+            patientName={patient.fullName}
           />
         )}
 
@@ -207,6 +208,7 @@ function PatientDetailPage() {
             title="Transfers"
             adls={adlsByCategory.transfers!}
             patientId={patientId}
+            patientName={patient.fullName}
           />
         )}
 
@@ -215,6 +217,7 @@ function PatientDetailPage() {
             title="Locomotion"
             adls={adlsByCategory.locomotion!}
             patientId={patientId}
+            patientName={patient.fullName}
           />
         )}
 
@@ -242,10 +245,12 @@ function ADLCategorySection({
   title,
   adls,
   patientId,
+  patientName,
 }: {
   title: string;
   adls: PatientADL[];
   patientId: string;
+  patientName: string;
 }) {
   return (
     <div className="space-y-3">
@@ -256,14 +261,14 @@ function ADLCategorySection({
 
       <div className="grid gap-3 sm:grid-cols-2">
         {adls.map((adl) => (
-          <ADLCard key={adl.id} adl={adl} patientId={patientId} />
+          <ADLCard key={adl.id} adl={adl} patientId={patientId} patientName={patientName} />
         ))}
       </div>
     </div>
   );
 }
 
-function ADLCard({ adl, patientId }: { adl: PatientADL; patientId: string }) {
+function ADLCard({ adl, patientId, patientName }: { adl: PatientADL; patientId: string; patientName: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const def = ADL_DEFINITIONS.find((d) => d.type === adl.adlType);
@@ -293,20 +298,51 @@ function ADLCard({ adl, patientId }: { adl: PatientADL; patientId: string }) {
   };
 
   return (
-    <Card className="transition-all hover:shadow-md">
+    <Card className="relative transition-all hover:shadow-md ">
+      {/* Delete button at card edge */}
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute cursor-pointer -right-2 -top-2 h-6 w-6 rounded-full border bg-background text-muted-foreground shadow-sm hover:text-destructive !hover:bg-destructive !hover:text-destructive-foreground"
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {def.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {def.name} from {patientName}'s
+              record, including all assessment history. This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              variant={"destructive"}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Link
-              to="/patients/$patientId/adls/$adlType"
-              params={{ patientId, adlType: adl.adlType as ADLType }}
-              className="flex-1"
-            >
-              <h3 className="font-semibold leading-tight hover:text-primary">
-                {def.name}
-              </h3>
-            </Link>
-          </div>
+          <Link
+            to="/patients/$patientId/adls/$adlType"
+            params={{ patientId, adlType: adl.adlType as ADLType }}
+            className="flex-1"
+          >
+            <h3 className="font-semibold leading-tight hover:text-primary">
+              {def.name}
+            </h3>
+          </Link>
 
           <div className="flex items-center gap-2">
             <ScoreBadge score={adl.currentScore as AssistanceLevel} />
@@ -316,37 +352,6 @@ function ADLCard({ adl, patientId }: { adl: PatientADL; patientId: string }) {
               </div>
             )}
             {goalReached && <div className="text-xl">🎉</div>}
-
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete {def.name}?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete this ADL and all its assessment
-                    history. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    variant={"destructive"}
-                  >
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </div>
         </div>
       </CardHeader>
