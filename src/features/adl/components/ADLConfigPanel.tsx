@@ -2,8 +2,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import type { ConfigOption } from "@/data/adl-definitions";
 import type { ADLType } from "@/db/types";
-import { Shirt, Sparkles } from "lucide-react";
-import * as React from "react";
+import { ArrowRightLeft, Shirt, Sparkles } from "lucide-react";
 
 interface ADLConfigPanelProps {
   options: ConfigOption[];
@@ -20,32 +19,27 @@ export function ADLConfigPanel({
   adlType,
   className,
 }: ADLConfigPanelProps) {
-  // Auto-select required options on mount
-  React.useEffect(() => {
-    const requiredOptions = options.filter((opt) =>
-      opt.id.includes("core-grooming"),
-    );
-    const requiredIds = requiredOptions.map((opt) => opt.id);
+  // Check ADL type categories
+  const isDressing = adlType === "dressingUpper" || adlType === "dressingLower";
+  const isTransfer =
+    adlType === "transferBedChair" ||
+    adlType === "transferToilet" ||
+    adlType === "transferBathShower";
 
-    if (requiredIds.length > 0) {
-      const hasAllRequired = requiredIds.every((id) =>
-        selectedOptions.includes(id),
-      );
-      if (!hasAllRequired) {
-        onChange([...new Set([...selectedOptions, ...requiredIds])]);
-      }
-    }
-  }, [options, selectedOptions, onChange]);
+  // Transfers use single-select (radio), others use multi-select (checkbox)
+  const isSingleSelect = isTransfer;
 
   const handleToggle = (optionId: string) => {
-    // Prevent deselecting required options
-    const isRequired = optionId.includes("core-grooming");
-    if (isRequired) return;
-
-    const newSelected = selectedOptions.includes(optionId)
-      ? selectedOptions.filter((id) => id !== optionId)
-      : [...selectedOptions, optionId];
-    onChange(newSelected);
+    if (isSingleSelect) {
+      // Single select: replace selection
+      onChange([optionId]);
+    } else {
+      // Multi select: toggle
+      const newSelected = selectedOptions.includes(optionId)
+        ? selectedOptions.filter((id) => id !== optionId)
+        : [...selectedOptions, optionId];
+      onChange(newSelected);
+    }
   };
 
   const totalSteps = options
@@ -53,23 +47,50 @@ export function ADLConfigPanel({
     .reduce((sum, opt) => sum + opt.steps.length, 0);
 
   // Dynamic text based on ADL type
-  const isDressing =
-    adlType === "dressingUpper" || adlType === "dressingLower";
-  const isGrooming = adlType === "grooming";
+  const getConfigText = () => {
+    if (isDressing) {
+      return {
+        icon: Shirt,
+        header: "Select Garments Worn",
+        sub: "Choose which items the patient is wearing today",
+        summary: "garment",
+        empty: "Select at least one garment to begin assessment",
+      };
+    }
+    if (isTransfer) {
+      return {
+        icon: ArrowRightLeft,
+        header: "Select Transfer Mode",
+        sub: "Choose how the patient transfers",
+        summary: "mode",
+        empty: "Select a transfer mode to begin assessment",
+      };
+    }
+    // Grooming (default)
+    return {
+      icon: Sparkles,
+      header: "Select Grooming Activities",
+      sub: "Choose which grooming activities apply to this patient",
+      summary: "activity",
+      empty: "Select grooming tasks the patient performs",
+    };
+  };
 
-  const headerIcon = isDressing ? Shirt : Sparkles;
-  const headerText = isDressing
-    ? "Select Garments Worn"
-    : "Select Grooming Activities";
-  const subText = isDressing
-    ? "Choose which items the patient is wearing today"
-    : "Choose which grooming activities apply to this patient";
-  const summaryText = isDressing ? "garment" : "activity";
-  const emptyText = isDressing
-    ? "Select at least one garment to begin assessment"
-    : "Core grooming tasks are always included";
+  const configText = getConfigText();
+  const Icon = configText.icon;
 
-  const Icon = headerIcon;
+  // Format summary text with correct pluralization
+  const getSummaryText = () => {
+    const count = selectedOptions.length;
+    if (isTransfer) {
+      return `${configText.summary} selected`;
+    }
+    if (isDressing) {
+      return `${count} ${configText.summary}${count !== 1 ? "s" : ""} selected`;
+    }
+    // Grooming: activity -> activities
+    return `${count} ${count !== 1 ? "activities" : "activity"} selected`;
+  };
 
   return (
     <div className={className}>
@@ -77,52 +98,58 @@ export function ADLConfigPanel({
         <div className="flex items-center gap-2">
           <Icon className="h-5 w-5 text-primary" />
           <span className="text-sm font-semibold text-foreground">
-            {headerText}
+            {configText.header}
           </span>
         </div>
-        <p className="text-xs text-muted-foreground">{subText}</p>
+        <p className="text-xs text-muted-foreground">{configText.sub}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {options.map((option) => {
           const isSelected = selectedOptions.includes(option.id);
-          const isRequired = option.id.includes("core-grooming");
 
           return (
             <div
               key={option.id}
-              className={`flex items-start space-x-3 rounded-lg border-2 p-4 transition-all ${
-                isRequired
-                  ? "border-primary/30 bg-primary/5"
-                  : "hover:border-primary/40 hover:shadow-sm"
+              className={`flex items-start space-x-3 rounded-lg border-2 p-4 transition-all cursor-pointer ${
+                isSelected
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/40 hover:shadow-sm"
               }`}
               onClick={() => handleToggle(option.id)}
             >
               <span onClick={(e) => e.stopPropagation()}>
-                <Checkbox
-                  id={`option-${option.id}`}
-                  checked={isSelected}
-                  onCheckedChange={() => handleToggle(option.id)}
-                  disabled={isRequired}
-                  className="mt-0.5"
-                />
+                {isSingleSelect ? (
+                  <div
+                    className={`mt-0.5 h-4 w-4 rounded-full border-2 flex items-center justify-center ${
+                      isSelected
+                        ? "border-primary bg-primary"
+                        : "border-muted-foreground"
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="h-2 w-2 rounded-full bg-white" />
+                    )}
+                  </div>
+                ) : (
+                  <Checkbox
+                    id={`option-${option.id}`}
+                    checked={isSelected}
+                    onCheckedChange={() => handleToggle(option.id)}
+                    className="mt-0.5"
+                  />
+                )}
               </span>
-              <div className="flex-1 cursor-pointer">
+              <div className="flex-1">
                 <Label
                   htmlFor={`option-${option.id}`}
-                  className={`cursor-pointer font-semibold ${
-                    isRequired ? "text-primary" : ""
-                  }`}
+                  className="cursor-pointer font-semibold"
                 >
                   {option.name}
-                  {isRequired && (
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">
-                      (Required)
-                    </span>
-                  )}
                 </Label>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {option.steps.length} step{option.steps.length !== 1 ? "s" : ""}
+                  {option.steps.length} step
+                  {option.steps.length !== 1 ? "s" : ""}
                 </p>
               </div>
             </div>
@@ -133,14 +160,12 @@ export function ADLConfigPanel({
       {selectedOptions.length > 0 ? (
         <div className="mt-4 rounded-lg bg-primary/10 p-3 text-center">
           <p className="text-sm font-semibold text-primary">
-            {selectedOptions.length} {summaryText}
-            {selectedOptions.length !== 1 ? (isDressing ? "s" : "ies") : (isGrooming ? "y" : "")}{" "}
-            selected • {totalSteps} total steps
+            {getSummaryText()} • {totalSteps} total steps
           </p>
         </div>
       ) : (
         <div className="mt-4 rounded-lg border-2 border-dashed p-4 text-center">
-          <p className="text-sm text-muted-foreground">{emptyText}</p>
+          <p className="text-sm text-muted-foreground">{configText.empty}</p>
         </div>
       )}
     </div>

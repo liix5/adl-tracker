@@ -39,9 +39,8 @@ export type ADLType =
   | "transferBedChair"
   | "transferToilet"
   | "transferBathShower"
-  // Locomotion (2)
-  | "locomotionWalkWheelchair"
-  | "locomotionStairs";
+  // Locomotion (1)
+  | "locomotionWalkWheelchair";
 
 export type AssistanceLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 

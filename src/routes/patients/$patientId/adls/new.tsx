@@ -5,17 +5,19 @@ import { db } from "@/db";
 import type { ADLType, Score6Reason, Score5Type } from "@/db/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Plus } from "lucide-react";
-import { ADL_DEFINITIONS, getADLsByCategory } from "@/data/adl-definitions";
-import { ScoreDisplay } from "@/features/adl/components/ScoreDisplay";
+import { ADL_DEFINITIONS } from "@/data/adl-definitions";
 import { FollowUpQuestions } from "@/features/adl/components/FollowUpQuestions";
 import { ADLStepsList } from "@/features/adl/components/ADLStepsList";
 import { ADLConfigPanel } from "@/features/adl/components/ADLConfigPanel";
 import { GoalSelector } from "@/features/adl/components/GoalSelector";
+import { ADLCardSelector } from "@/features/adl/components/ADLCardSelector";
+import { StickyScoreDisplay } from "@/features/adl/components/StickyScoreDisplay";
 import { createPatientADL } from "@/features/adl/api";
-import { getApplicableSteps, calculateScoreFromSteps } from "@/features/adl/scoring";
+import {
+  getApplicableSteps,
+  calculateScoreFromSteps,
+} from "@/features/adl/scoring";
 
 export const Route = createFileRoute("/patients/$patientId/adls/new")({
   component: AddADLPage,
@@ -33,15 +35,23 @@ function AddADLPage() {
     return await db.patientAdls.where("patientId").equals(patientId).toArray();
   }, [patientId]);
 
-  const [selectedAdlType, setSelectedAdlType] = React.useState<ADLType | "">("");
+  const [selectedAdlType, setSelectedAdlType] = React.useState<ADLType | "">(
+    "",
+  );
   const [completedSteps, setCompletedSteps] = React.useState<string[]>([]);
   const [score6Reasons, setScore6Reasons] = React.useState<Score6Reason[]>([]);
   const [score5Types, setScore5Types] = React.useState<Score5Type[]>([]);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
-  const [goalScore, setGoalScore] = React.useState<number | undefined>(undefined);
+  const [goalScore, setGoalScore] = React.useState<number | undefined>(
+    undefined,
+  );
   const [isSaving, setIsSaving] = React.useState(false);
-  const [needsSupervision, setNeedsSupervision] = React.useState<boolean | undefined>(undefined);
-  const [needsModifiers, setNeedsModifiers] = React.useState<boolean | undefined>(undefined);
+  const [needsSupervision, setNeedsSupervision] = React.useState<
+    boolean | undefined
+  >(undefined);
+  const [needsModifiers, setNeedsModifiers] = React.useState<
+    boolean | undefined
+  >(undefined);
 
   // Compute derived values before early returns so hooks stay unconditional
   const selectedAdlDefinition = selectedAdlType
@@ -64,7 +74,8 @@ function AddADLPage() {
   const prevPercentageRef = React.useRef(percentage);
   React.useEffect(() => {
     const adlChanged = prevAdlTypeRef.current !== selectedAdlType;
-    const droppedBelow100 = prevPercentageRef.current === 100 && percentage < 100;
+    const droppedBelow100 =
+      prevPercentageRef.current === 100 && percentage < 100;
 
     if (adlChanged || droppedBelow100) {
       setNeedsSupervision(undefined);
@@ -96,7 +107,7 @@ function AddADLPage() {
   // Filter out already tracked ADLs
   const trackedTypes = new Set(existingAdls?.map((a) => a.adlType) ?? []);
   const availableAdls = ADL_DEFINITIONS.filter(
-    (def) => !trackedTypes.has(def.type)
+    (def) => !trackedTypes.has(def.type),
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -108,11 +119,13 @@ function AddADLPage() {
       await createPatientADL({
         patientId,
         adlType: selectedAdlType as ADLType,
-        selectedOptions: selectedOptions.length > 0 ? selectedOptions : undefined,
+        selectedOptions:
+          selectedOptions.length > 0 ? selectedOptions : undefined,
         admissionScore: assistanceLevel,
         admissionStepsCompleted: completedSteps,
         admissionAssistanceLevel: assistanceLevel,
-        admissionScore6Reasons: assistanceLevel === 6 ? score6Reasons : undefined,
+        admissionScore6Reasons:
+          assistanceLevel === 6 ? score6Reasons : undefined,
         admissionScore5Types: assistanceLevel === 5 ? score5Types : undefined,
         goalScore: goalScore,
       });
@@ -171,52 +184,23 @@ function AddADLPage() {
         <Card>
           <CardHeader>
             <h2 className="text-lg font-semibold">Select ADL</h2>
+            <p className="text-sm text-muted-foreground">
+              {availableAdls.length} available to track
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <Label htmlFor="adlType">ADL Type *</Label>
-              <Select
-                value={selectedAdlType}
-                onValueChange={(value) => {
-                  setSelectedAdlType(value as ADLType);
-                  setCompletedSteps([]);
-                  setSelectedOptions([]);
-                }}
-              >
-                <SelectTrigger id="adlType">
-                  <SelectValue placeholder="Choose an ADL to track" />
-                </SelectTrigger>
-                <SelectContent>
-                  {["selfCare", "transfers", "locomotion"].map((category) => {
-                    const categoryAdls = getADLsByCategory(
-                      category as "selfCare" | "transfers" | "locomotion"
-                    ).filter((def) => availableAdls.some((a) => a.type === def.type));
-
-                    if (categoryAdls.length === 0) return null;
-
-                    return (
-                      <React.Fragment key={category}>
-                        <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
-                          {category === "selfCare"
-                            ? "Self-Care"
-                            : category === "transfers"
-                              ? "Transfers"
-                              : "Locomotion"}
-                        </div>
-                        {categoryAdls.map((def) => (
-                          <SelectItem key={def.type} value={def.type}>
-                            {def.name}
-                          </SelectItem>
-                        ))}
-                      </React.Fragment>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
+            <ADLCardSelector
+              availableAdls={availableAdls}
+              selectedAdlType={selectedAdlType}
+              onSelect={(adlType) => {
+                setSelectedAdlType(adlType);
+                setCompletedSteps([]);
+                setSelectedOptions([]);
+              }}
+            />
 
             {selectedAdlDefinition && (
-              <div className="mt-3 text-sm text-muted-foreground">
+              <div className="mt-4 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
                 {selectedAdlDefinition.description}
               </div>
             )}
@@ -225,7 +209,15 @@ function AddADLPage() {
 
         {selectedAdlDefinition && (
           <>
-            {/* Configuration (for dressing) */}
+            {/* Sticky Score Display */}
+            {applicableSteps.length > 0 && (
+              <StickyScoreDisplay
+                score={assistanceLevel}
+                percentage={percentage}
+              />
+            )}
+
+            {/* Configuration (for dressing/grooming) */}
             {selectedAdlDefinition.configurableSteps && (
               <Card>
                 <CardHeader>
@@ -246,10 +238,38 @@ function AddADLPage() {
             {applicableSteps.length > 0 && (
               <Card>
                 <CardHeader>
-                  <h2 className="text-lg font-semibold">Steps Completed</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Check off steps the patient can complete independently
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-lg font-semibold">Steps Completed</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Check off steps the patient can complete independently
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCompletedSteps([])}
+                        disabled={completedSteps.length === 0}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setCompletedSteps(applicableSteps.map((s) => s.id))
+                        }
+                        disabled={
+                          completedSteps.length === applicableSteps.length
+                        }
+                      >
+                        All
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <ADLStepsList
@@ -277,11 +297,6 @@ function AddADLPage() {
               />
             )}
 
-            {/* Calculated Score Display */}
-            {applicableSteps.length > 0 && (
-              <ScoreDisplay score={assistanceLevel} />
-            )}
-
             {/* Goal */}
             <Card>
               <CardHeader>
@@ -303,7 +318,7 @@ function AddADLPage() {
         )}
 
         {/* Submit Button */}
-        <div className="fixed bottom-0 left-0 right-0 border-t bg-background p-4 shadow-lg">
+        <div className="fixed bottom-0 z-20 left-0 right-0 border-t bg-background p-4 shadow-lg">
           <div className="mx-auto max-w-4xl">
             <Button
               type="submit"

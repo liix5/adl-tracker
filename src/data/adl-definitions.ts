@@ -59,23 +59,38 @@ const grooming: ADLDefinition = {
   name: "Grooming",
   category: "selfCare",
   description:
-    "Oral care, hair grooming, washing face/hands, shaving or applying makeup",
+    "Select which grooming tasks the patient performs, then mark which they can do independently",
   configurableSteps: {
     options: [
       {
-        id: "core-grooming",
-        name: "Core Grooming (Always Required)",
-        steps: [
-          { id: "oral-care", name: "Oral care (brush teeth/dentures)" },
-          { id: "hair-grooming", name: "Hair grooming (brush/comb)" },
-          { id: "wash-face", name: "Washing, rinsing, and drying face" },
-          { id: "wash-hands", name: "Washing, rinsing, and drying hands" },
-        ],
+        id: "oral-care",
+        name: "Oral Care",
+        steps: [{ id: "oral-care", name: "Brush teeth or care for dentures" }],
       },
       {
-        id: "shaving-makeup",
-        name: "Shaving or Makeup",
-        steps: [{ id: "shaving-makeup", name: "Shaving or applying makeup" }],
+        id: "hair-grooming",
+        name: "Hair Grooming",
+        steps: [{ id: "hair-grooming", name: "Brush or comb hair" }],
+      },
+      {
+        id: "wash-face",
+        name: "Wash Face",
+        steps: [{ id: "wash-face", name: "Wash, rinse, and dry face" }],
+      },
+      {
+        id: "wash-hands",
+        name: "Wash Hands",
+        steps: [{ id: "wash-hands", name: "Wash, rinse, and dry hands" }],
+      },
+      {
+        id: "shaving",
+        name: "Shaving",
+        steps: [{ id: "shaving", name: "Shave face" }],
+      },
+      {
+        id: "makeup",
+        name: "Makeup",
+        steps: [{ id: "makeup", name: "Apply makeup" }],
       },
     ],
   },
@@ -289,6 +304,22 @@ const dressingUpper: ADLDefinition = {
           },
         ],
       },
+      {
+        id: "upper-prosthesis",
+        name: "Upper Limb Prosthesis (e.g., artificial arm/hand)",
+        steps: [
+          { id: "upper-prosthesis-don", name: "Applying prosthesis" },
+          { id: "upper-prosthesis-doff", name: "Removing prosthesis" },
+        ],
+      },
+      {
+        id: "upper-orthosis",
+        name: "Upper Body Orthosis (e.g., splint, sling, brace)",
+        steps: [
+          { id: "upper-orthosis-don", name: "Applying orthosis" },
+          { id: "upper-orthosis-doff", name: "Removing orthosis" },
+        ],
+      },
     ],
   },
 };
@@ -426,6 +457,22 @@ const dressingLower: ADLDefinition = {
           },
         ],
       },
+      {
+        id: "lower-prosthesis",
+        name: "Lower Limb Prosthesis (e.g., artificial leg/foot)",
+        steps: [
+          { id: "lower-prosthesis-don", name: "Applying prosthesis" },
+          { id: "lower-prosthesis-doff", name: "Removing prosthesis" },
+        ],
+      },
+      {
+        id: "lower-orthosis",
+        name: "Lower Body Orthosis (e.g., AFO, knee brace)",
+        steps: [
+          { id: "lower-orthosis-don", name: "Applying orthosis" },
+          { id: "lower-orthosis-doff", name: "Removing orthosis" },
+        ],
+      },
     ],
   },
 };
@@ -465,12 +512,43 @@ const transferBedChair: ADLDefinition = {
   name: "Bed/Chair/Wheelchair Transfer",
   category: "transfers",
   description: "Move to/from bed, chair, or wheelchair",
-  steps: [
-    { id: "approach-position", name: "Approach and position" },
-    { id: "sit-to-stand", name: "Sit to stand (or stand to sit)" },
-    { id: "pivot-turn", name: "Pivot/turn body" },
-    { id: "lower-sit", name: "Lower to sit safely" },
-  ],
+  configurableSteps: {
+    options: [
+      {
+        id: "bed-chair-walking",
+        name: "Walking",
+        steps: [
+          { id: "walking-approach-bed-chair", name: "Approach bed/chair" },
+          {
+            id: "walking-sit-transfer-bed-chair",
+            name: "Sit down/transfer into bed or chair",
+          },
+          {
+            id: "walking-stand-up-bed-chair",
+            name: "Get up to standing position",
+          },
+        ],
+      },
+      {
+        id: "bed-chair-wheelchair",
+        name: "Wheelchair",
+        steps: [
+          { id: "wc-approach-bed-chair", name: "Approach bed/chair" },
+          { id: "wc-lock-brakes-bed-chair", name: "Lock brakes" },
+          { id: "wc-lift-footrests-bed-chair", name: "Lift foot rests" },
+          {
+            id: "wc-remove-armrests-bed-chair",
+            name: "Remove arm rests if necessary",
+          },
+          {
+            id: "wc-transfer-bed-chair",
+            name: "Perform standing pivot or sliding transfer",
+          },
+          { id: "wc-return-bed-chair", name: "Return (transfer back)" },
+        ],
+      },
+    ],
+  },
 };
 
 const transferToilet: ADLDefinition = {
@@ -478,11 +556,37 @@ const transferToilet: ADLDefinition = {
   name: "Toilet Transfer",
   category: "transfers",
   description: "Get on/off toilet",
-  steps: [
-    { id: "approach-toilet", name: "Approach toilet" },
-    { id: "sit-to-stand-toilet", name: "Sit to stand (or stand to sit)" },
-    { id: "position-toilet", name: "Position safely on toilet" },
-  ],
+  configurableSteps: {
+    options: [
+      {
+        id: "toilet-walking",
+        name: "Walking",
+        steps: [
+          { id: "walking-approach-toilet", name: "Approach toilet" },
+          { id: "walking-sit-toilet", name: "Sit down on toilet" },
+          { id: "walking-stand-toilet", name: "Get up from toilet" },
+        ],
+      },
+      {
+        id: "toilet-wheelchair",
+        name: "Wheelchair",
+        steps: [
+          { id: "wc-approach-toilet", name: "Approach toilet" },
+          { id: "wc-lock-brakes-toilet", name: "Lock brakes" },
+          { id: "wc-lift-footrests-toilet", name: "Lift foot rests" },
+          {
+            id: "wc-remove-armrests-toilet",
+            name: "Remove arm rests if necessary",
+          },
+          {
+            id: "wc-transfer-toilet",
+            name: "Perform standing pivot or sliding transfer",
+          },
+          { id: "wc-return-toilet", name: "Return (transfer back)" },
+        ],
+      },
+    ],
+  },
 };
 
 const transferBathShower: ADLDefinition = {
@@ -490,12 +594,37 @@ const transferBathShower: ADLDefinition = {
   name: "Tub/Shower Transfer",
   category: "transfers",
   description: "Get in/out of tub or shower",
-  steps: [
-    { id: "approach-tub", name: "Approach tub/shower" },
-    { id: "step-over", name: "Step over tub edge or enter shower" },
-    { id: "position-bath", name: "Position safely in tub/shower" },
-    { id: "exit-bath", name: "Exit tub/shower safely" },
-  ],
+  configurableSteps: {
+    options: [
+      {
+        id: "bath-shower-walking",
+        name: "Walking",
+        steps: [
+          { id: "walking-approach-bath", name: "Approach tub/shower" },
+          { id: "walking-enter-bath", name: "Get into tub/shower" },
+          { id: "walking-exit-bath", name: "Get out of tub/shower" },
+        ],
+      },
+      {
+        id: "bath-shower-wheelchair",
+        name: "Wheelchair",
+        steps: [
+          { id: "wc-approach-bath", name: "Approach tub/shower" },
+          { id: "wc-lock-brakes-bath", name: "Lock brakes" },
+          { id: "wc-lift-footrests-bath", name: "Lift foot rests" },
+          {
+            id: "wc-remove-armrests-bath",
+            name: "Remove arm rests if necessary",
+          },
+          {
+            id: "wc-transfer-bath",
+            name: "Perform standing pivot or sliding transfer",
+          },
+          { id: "wc-return-bath", name: "Return (transfer back)" },
+        ],
+      },
+    ],
+  },
 };
 
 // =============================================================================
@@ -506,28 +635,12 @@ const locomotionWalkWheelchair: ADLDefinition = {
   type: "locomotionWalkWheelchair",
   name: "Walk/Wheelchair",
   category: "locomotion",
-  description: "Walk or propel wheelchair for 150 feet",
+  description: "Walk or propel wheelchair for 50 metres on a level surface",
   steps: [
     {
-      id: "initiate-movement",
-      name: "Initiate walking or wheelchair propulsion",
+      id: "walk-or-propel-50m",
+      name: "Walk or propel wheelchair for 50 metres on a level surface",
     },
-    { id: "maintain-balance", name: "Maintain balance/posture" },
-    { id: "navigate-150ft", name: "Navigate 150 feet safely" },
-    { id: "turn-maneuver", name: "Turn and maneuver as needed" },
-  ],
-};
-
-const locomotionStairs: ADLDefinition = {
-  type: "locomotionStairs",
-  name: "Stairs",
-  category: "locomotion",
-  description: "Go up and down 12-14 stairs",
-  steps: [
-    { id: "approach-stairs", name: "Approach stairs safely" },
-    { id: "ascend", name: "Ascend 12-14 stairs" },
-    { id: "descend", name: "Descend 12-14 stairs" },
-    { id: "use-rail", name: "Use railing appropriately" },
   ],
 };
 
@@ -547,9 +660,8 @@ export const ADL_DEFINITIONS: readonly ADLDefinition[] = [
   transferBedChair,
   transferToilet,
   transferBathShower,
-  // Locomotion (2)
+  // Locomotion (1)
   locomotionWalkWheelchair,
-  locomotionStairs,
 ] as const;
 
 export const ADL_DEFINITIONS_MAP = Object.fromEntries(

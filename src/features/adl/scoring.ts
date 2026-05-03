@@ -253,13 +253,4 @@ export const ADL_FOLLOWUP_QUESTIONS: Record<ADLType, ADLFollowUpData> = {
     modifierExamples:
       "e.g., brace/prosthesis, walking stick, crutches, walking frame, safety concerns, extra time",
   },
-  locomotionStairs: {
-    supervisionQuestion:
-      "Does the patient require supervision for a full flight of stairs?",
-    supervisionExamples: "e.g., supervision for a full flight",
-    modifierQuestion:
-      "Does the patient use a device, have safety concerns, or need extra time?",
-    modifierExamples:
-      "e.g., handrail, walking stick, portable supports, safety concerns, extra time",
-  },
 };
