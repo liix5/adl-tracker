@@ -69,6 +69,10 @@ function AddADLPage() {
     needsModifiers,
   });
 
+  // Check if configuration is required but not provided
+  const requiresConfig = selectedAdlDefinition?.configurableSteps != null;
+  const hasRequiredConfig = !requiresConfig || selectedOptions.length > 0;
+
   // Reset follow-up answers when percentage drops below 100 or ADL type changes
   const prevAdlTypeRef = React.useRef(selectedAdlType);
   const prevPercentageRef = React.useRef(percentage);
@@ -324,10 +328,14 @@ function AddADLPage() {
               type="submit"
               size="lg"
               className="w-full gap-2 text-base"
-              disabled={!selectedAdlType || isSaving}
+              disabled={!selectedAdlType || !hasRequiredConfig || isSaving}
             >
               <Plus className="h-5 w-5" />
-              {isSaving ? "Adding..." : "Add ADL"}
+              {isSaving
+                ? "Adding..."
+                : !hasRequiredConfig
+                  ? "Select configuration options"
+                  : "Add ADL"}
             </Button>
           </div>
         </div>
