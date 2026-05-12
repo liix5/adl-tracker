@@ -65,11 +65,11 @@ export function InstallPromptDialog({
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <span className="text-sm font-medium">1</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <span>Tap the</span>
                 <Share className="h-5 w-5 text-primary" />
                 <span className="font-medium">Share</span>
@@ -77,18 +77,20 @@ export function InstallPromptDialog({
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <span className="text-sm font-medium">2</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span>Scroll and tap</span>
+              <div className="flex items-center gap-1">
+                <span className="whitespace-nowrap">Scroll and tap</span>
                 <PlusSquare className="h-5 w-5 text-primary" />
-                <span className="font-medium">"Add to Home Screen"</span>
+                <span className="font-medium whitespace-nowrap">
+                  "Add to Home Screen"
+                </span>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <span className="text-sm font-medium">3</span>
               </div>
@@ -219,9 +221,7 @@ export function InstallPromptDialog({
         <DialogContent showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>Install ADL Tracker</DialogTitle>
-            <DialogDescription>
-              Get the full app experience:
-            </DialogDescription>
+            <DialogDescription>Get the full app experience:</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
@@ -248,7 +248,11 @@ export function InstallPromptDialog({
           </div>
 
           <DialogFooter className="flex-row gap-2">
-            <Button variant="outline" onClick={handleDismiss} className="flex-1">
+            <Button
+              variant="outline"
+              onClick={handleDismiss}
+              className="flex-1"
+            >
               Not now
             </Button>
             <Button onClick={handleInstall} className="flex-1 gap-2">
@@ -283,7 +287,5 @@ export function InstallPromptAutoShow() {
 
   if (!canInstall) return null;
 
-  return (
-    <InstallPromptDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-  );
+  return <InstallPromptDialog open={dialogOpen} onOpenChange={setDialogOpen} />;
 }
