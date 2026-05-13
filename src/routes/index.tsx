@@ -101,7 +101,7 @@ function PatientsHome() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">FIM Tracker</h1>
+          <h1 className="text-3xl font-bold tracking-tight">ADL Tracker</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Track patient functional independence and ADL progress
           </p>
